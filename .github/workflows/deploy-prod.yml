@@ -1,0 +1,55 @@
+name: Deploy Production (EKS)
+
+on:
+  push:
+    branches: [ main ]
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    if: ${{ hashFiles('deploy/chart/Chart.yaml') != '' }}
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAMESPACE: ${{ github.repository_owner }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.0
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Update kubeconfig for EKS
+        run: aws eks update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
+
+      - name: Deploy via Helm (prod)
+        run: |
+          helm upgrade --install bakewise deploy/chart \
+            -f deploy/values.prod.yaml \
+            --set apiGateway.image=${REGISTRY}/${IMAGE_NAMESPACE}/api-gateway:main \
+            --set frontend.image=${REGISTRY}/${IMAGE_NAMESPACE}/frontend:main \
+            --namespace bakewise --create-namespace

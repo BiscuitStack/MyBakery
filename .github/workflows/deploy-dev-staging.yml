@@ -1,0 +1,47 @@
+name: Deploy Dev/Staging (Local K8s)
+
+on:
+  push:
+    branches:
+      - dev
+      - staging
+
+concurrency:
+  group: deploy-local-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    if: ${{ hashFiles('deploy/chart/Chart.yaml') != '' }}
+    runs-on: self-hosted
+    environment: ${{ github.ref_name }}
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAMESPACE: ${{ github.repository_owner }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.0
+
+      - name: Use docker-desktop context
+        run: kubectl config use-context docker-desktop
+
+      - name: Deploy via Helm (dev/staging)
+        run: |
+          helm upgrade --install bakewise deploy/chart \
+            -f deploy/values.dev.yaml \
+            --set apiGateway.image=${REGISTRY}/${IMAGE_NAMESPACE}/api-gateway:${{ github.ref_name }} \
+            --set frontend.image=${REGISTRY}/${IMAGE_NAMESPACE}/frontend:${{ github.ref_name }} \
+            --namespace bakewise --create-namespace
