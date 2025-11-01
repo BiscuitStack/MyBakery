@@ -17,8 +17,8 @@ Concise contributor guide for the BakeWise monorepo managed by Nx. This covers s
 
 ## Project Structure & Module Organization
 - Monorepo (Nx): applications in `apps/`, shared code in `libs/`, docs in `docs/`, deployment in `deploy/`.
-- Apps: `apps/api-gateway` (NestJS), `apps/frontend` (Next.js), `apps/service-<name>` (NestJS microservices over RabbitMQ).
-- Libs: domain and shared utilities (e.g., `libs/database`, `libs/contracts`, `libs/auth`). Enforce boundaries via Nx tags.
+- Apps: `apps/api-gateway` (NestJS), `apps/frontend` (Next.js), and domain services (`apps/service-auth-tenancy`, `service-customers`, `service-inventory`, `service-recipes`, `service-orders`, `service-production`, with dashboard analytics planned as its own service).
+- Libs: shared utilities (`libs/common`, `libs/messaging`, `libs/database`, `libs/auth`, `libs/contracts`, `libs/validation`, `libs/units`, `libs/common-errors`, `libs/ui-charts`). Enforce scope/type boundaries via Nx tags.
 
 ## Build, Test, and Development Commands
 - Graph and affected: `nx graph`, `nx affected -t lint,test,build`.
@@ -36,11 +36,14 @@ Concise contributor guide for the BakeWise monorepo managed by Nx. This covers s
 - IDs: UUID v4 strings.
 - Use unified error shape:  
   `{ status, code, message, details? }`
+- Emit events through RabbitMQ using the routing convention `bakewise.<context>.<entity>.<event>.v<version>` and the outbox pattern.
+- Keep business analytics modules modular; charts must consume data via shared contracts and `libs/ui-charts`.
   
 ## Testing Guidelines
 - Frameworks: Jest for unit/integration; Supertest for NestJS e2e; Playwright/Cypress for frontend e2e.
 - Layout: `apps/<project>/src/**/*.spec.ts`, e2e as `*.e2e-spec.ts` in dedicated e2e app.
 - Targets: ≥90% coverage for core libs (`libs/*`) and all services. Add regression tests for fixes.
+- Golden-path integration must include production planning output and waste logging checks. Analytics endpoints require unit/contract coverage.
 
 ## Commit & Pull Request Guidelines
 - Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`, `docs:`). One concern per commit.
@@ -49,11 +52,14 @@ Concise contributor guide for the BakeWise monorepo managed by Nx. This covers s
   - Example requests/responses
   - Linked tests + API docs
 - Update `/codex/TODO.md` daily to track feature progress
-- Update `docs/architecture.md` with relevant changes.
+- Update `docs/architecture.md` with relevant changes and keep `docs/PRD.md`/analytics sections in sync when scope evolves.
+- Keep branches short-lived; rebase onto `main` before opening/merging PRs to preserve linear history.
 
 ## Security & Configuration Tips
 - Never commit secrets. Dev via per-app `.env` and a tracked `.env.example`. Kubernetes uses Secrets; mount via env.
 - Contracts (RabbitMQ message shapes) live in `libs/contracts`; version changes require coordinated updates.
+- All services own their database/schema; no cross-service joins. Enforce tenancy via `tenantId` everywhere.
+- Shared error codes come from `libs/common-errors`; document meanings in `/docs/error-catalog.md` when introducing new codes.
 
 ## Deployment & Environments
 - Local (staging/dev branches): use Docker Desktop Kubernetes context. Example: `kubectl config use-context docker-desktop` then `helm upgrade --install bakewise deploy/chart -f deploy/values.dev.yaml`.
@@ -65,6 +71,7 @@ Concise contributor guide for the BakeWise monorepo managed by Nx. This covers s
 - Prefer `nx g` to scaffold projects/libs and keep project.json targets consistent.
 - Optimize with `nx affected` and caching; avoid cross-cutting renames without coordination.
 - Prisma is the standard ORM. Each microservice owns its database/schema—delay Prisma model definitions until the service is implemented.
+- When adding analytics features, extend `libs/ui-charts` or create new tagged libs rather than embedding chart logic in apps.
 
 ## Cognitive Architecture Pattern
 Agents must operate using a lightweight cognitive architecture loop to keep work deterministic and transparent:
