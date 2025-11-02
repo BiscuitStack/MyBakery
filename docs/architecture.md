@@ -8,6 +8,7 @@ Core Principles
 - Small, deterministic changes; simplest viable solutions.
 - Soft-delete policy; UUID v4 IDs; unified error shape `{ status, code, message, details? }`.
 - Encrypt sensitive data at rest; all service-to-service links and RabbitMQ connections use TLS.
+- Configuration flows through Nest `ConfigModule` with Zod-based environment schemas; services access settings via `ConfigService` rather than `process.env`.
 
 Git Branching Strategy
 - `main` is the trunk and always reflects the latest production-ready state.

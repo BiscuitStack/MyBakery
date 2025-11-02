@@ -1,3 +1,4 @@
+import { ConfigModule } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 
 import { AuthModule } from '../auth/auth.module';
@@ -7,6 +8,7 @@ import {
   PROVISIONING_SECRET_TOKEN,
   JWT_SECRET_TOKEN,
 } from '../app.tokens';
+import { authEnvSchema } from '../config/environment';
 
 describe('AuthService', () => {
   const provisioningSecret = 'auth-service-secret';
@@ -17,7 +19,14 @@ describe('AuthService', () => {
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [AuthModule],
+      imports: [
+        ConfigModule.forRoot({
+          isGlobal: true,
+          cache: true,
+          validate: (env) => authEnvSchema.parse(env),
+        }),
+        AuthModule,
+      ],
     })
       .overrideProvider(PROVISIONING_SECRET_TOKEN)
       .useValue(provisioningSecret)

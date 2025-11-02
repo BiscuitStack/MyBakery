@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaClient } from '@bakewise/database/generated/auth-client';
-import { getAuthPrismaClient } from '@bakewise/database';
 import { createHash } from 'crypto';
 
 import {
@@ -12,7 +11,7 @@ import {
 
 @Injectable()
 export class PrismaTenancyRepository extends TenancyRepository {
-  constructor(private readonly prisma: PrismaClient = getAuthPrismaClient()) {
+  constructor(private readonly prisma: PrismaClient) {
     super();
   }
 

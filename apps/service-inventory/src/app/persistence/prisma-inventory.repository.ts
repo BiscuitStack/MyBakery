@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma, PrismaClient } from '@bakewise/database/generated/inventory-client';
-import { getInventoryPrismaClient } from '@bakewise/database';
 import { Unit, canConvert, convertUnit } from '@bakewise/units';
 
 import {
@@ -15,7 +14,7 @@ import {
 
 @Injectable()
 export class PrismaInventoryRepository extends InventoryRepository {
-  constructor(private readonly prisma: PrismaClient = getInventoryPrismaClient()) {
+  constructor(private readonly prisma: PrismaClient) {
     super();
   }
 

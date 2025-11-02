@@ -1,9 +1,11 @@
+import { ConfigModule } from '@nestjs/config';
 import { Test } from '@nestjs/testing';
 
 import { TenancyModule } from '../tenancy/tenancy.module';
 import { TenancyService } from '../tenancy/tenancy.service';
 import { DomainEventPublisher } from '../infrastructure/domain-event.publisher';
 import { PROVISIONING_SECRET_TOKEN } from '../app.tokens';
+import { authEnvSchema } from '../config/environment';
 
 describe('TenancyService', () => {
   const provisioningSecret = 'unit-provisioning-secret';
@@ -14,7 +16,14 @@ describe('TenancyService', () => {
     publishSpy = jest.fn().mockResolvedValue(undefined);
 
     const moduleRef = await Test.createTestingModule({
-      imports: [TenancyModule],
+      imports: [
+        ConfigModule.forRoot({
+          isGlobal: true,
+          cache: true,
+          validate: (env) => authEnvSchema.parse(env),
+        }),
+        TenancyModule,
+      ],
     })
       .overrideProvider(PROVISIONING_SECRET_TOKEN)
       .useValue(provisioningSecret)

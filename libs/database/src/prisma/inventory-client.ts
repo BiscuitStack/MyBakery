@@ -3,13 +3,23 @@ import { PrismaClient } from '@bakewise/database/generated/inventory-client';
 
 let inventoryPrisma: PrismaClient | null = null;
 
-export const getInventoryPrismaClient = (): PrismaClient => {
-  if (!inventoryPrisma) {
-    if (!process.env.INVENTORY_DATABASE_URL) {
-      throw new Error('INVENTORY_DATABASE_URL environment variable must be set before initializing Prisma');
-    }
-    inventoryPrisma = new PrismaClient();
+export const getInventoryPrismaClient = (databaseUrl: string): PrismaClient => {
+  if (!databaseUrl) {
+    throw new Error(
+      'INVENTORY_DATABASE_URL must be provided before initializing Prisma',
+    );
   }
+
+  if (!inventoryPrisma) {
+    inventoryPrisma = new PrismaClient({
+      datasources: {
+        db: {
+          url: databaseUrl,
+        },
+      },
+    });
+  }
+
   return inventoryPrisma;
 };
 
