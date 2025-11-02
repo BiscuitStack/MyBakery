@@ -1,0 +1,20 @@
+{
+  "name": "service-auth-tenancy-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "root": "tests/e2e/service-auth-tenancy",
+  "sourceRoot": "tests/e2e/service-auth-tenancy/src",
+  "projectType": "application",
+  "implicitDependencies": ["service-auth-tenancy"],
+  "tags": ["scope:auth", "type:e2e"],
+  "targets": {
+    "e2e": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "tests/e2e/service-auth-tenancy/jest.config.ts",
+        "passWithNoTests": true
+      },
+      "dependsOn": ["service-auth-tenancy:build"]
+    }
+  }
+}

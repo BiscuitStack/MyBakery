@@ -1,0 +1,70 @@
+{
+  "name": "service-auth-tenancy",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/service-auth-tenancy/src",
+  "projectType": "application",
+  "tags": ["scope:auth", "type:service"],
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{workspaceRoot}/dist/apps/service-auth-tenancy"],
+      "defaultConfiguration": "production",
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/apps/service-auth-tenancy",
+        "main": "apps/service-auth-tenancy/src/main.ts",
+        "tsConfig": "apps/service-auth-tenancy/tsconfig.app.json",
+        "assets": ["apps/service-auth-tenancy/src/assets"],
+        "webpackConfig": "apps/service-auth-tenancy/webpack.config.js",
+        "generatePackageJson": true
+      },
+      "configurations": {
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "watch": true
+        },
+        "production": {
+          "optimization": true,
+          "extractLicenses": true,
+          "sourceMap": false,
+          "watch": false
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "service-auth-tenancy:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "service-auth-tenancy:build:development"
+        },
+        "production": {
+          "buildTarget": "service-auth-tenancy:build:production"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{workspaceRoot}/reports/eslint/{projectRoot}"],
+      "options": {
+        "lintFilePatterns": [
+          "apps/service-auth-tenancy/**/*.ts",
+          "apps/service-auth-tenancy/**/*.tsx"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/service-auth-tenancy/jest.config.ts"
+      }
+    }
+  }
+}
