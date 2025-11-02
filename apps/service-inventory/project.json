@@ -1,0 +1,70 @@
+{
+  "name": "service-inventory",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/service-inventory/src",
+  "projectType": "application",
+  "tags": ["scope:inventory", "type:service"],
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{workspaceRoot}/dist/apps/service-inventory"],
+      "defaultConfiguration": "production",
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/apps/service-inventory",
+        "main": "apps/service-inventory/src/main.ts",
+        "tsConfig": "apps/service-inventory/tsconfig.app.json",
+        "assets": ["apps/service-inventory/src/assets"],
+        "webpackConfig": "apps/service-inventory/webpack.config.js",
+        "generatePackageJson": true
+      },
+      "configurations": {
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true,
+          "watch": true
+        },
+        "production": {
+          "optimization": true,
+          "extractLicenses": true,
+          "sourceMap": false,
+          "watch": false
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "service-inventory:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "service-inventory:build:development"
+        },
+        "production": {
+          "buildTarget": "service-inventory:build:production"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{workspaceRoot}/reports/eslint/{projectRoot}"],
+      "options": {
+        "lintFilePatterns": [
+          "apps/service-inventory/**/*.ts",
+          "apps/service-inventory/**/*.tsx"
+        ]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/service-inventory/jest.config.ts"
+      }
+    }
+  }
+}

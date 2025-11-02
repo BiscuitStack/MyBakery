@@ -1,0 +1,42 @@
+version: '3.9'
+
+services:
+  auth-db:
+    image: postgres:15
+    container_name: bakewise-auth-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: auth
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - auth-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d auth"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  inventory-db:
+    image: postgres:15
+    container_name: bakewise-inventory-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: inventory
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5435:5432"
+    volumes:
+      - inventory-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d inventory"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  auth-db-data:
+  inventory-db-data:

@@ -1,0 +1,20 @@
+{
+  "name": "service-inventory-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "root": "tests/e2e/service-inventory",
+  "sourceRoot": "tests/e2e/service-inventory/src",
+  "projectType": "application",
+  "implicitDependencies": ["service-inventory"],
+  "tags": ["scope:inventory", "type:e2e"],
+  "targets": {
+    "e2e": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "tests/e2e/service-inventory/jest.config.ts",
+        "passWithNoTests": true
+      },
+      "dependsOn": ["service-inventory:build"]
+    }
+  }
+}
