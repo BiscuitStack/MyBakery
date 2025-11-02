@@ -52,3 +52,7 @@ context/memory/episodic.txt
 # Codex agent artifacts
 codex/TODO.md
 codex/*.log
+
+# Next.js
+.next
+out

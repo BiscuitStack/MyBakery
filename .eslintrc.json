@@ -1,0 +1,130 @@
+{
+  "root": true,
+  "ignorePatterns": ["dist/", "node_modules/"],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": false,
+    "ecmaVersion": 2022,
+    "sourceType": "module"
+  },
+  "plugins": ["@typescript-eslint", "@nx"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "overrides": [
+    {
+      "files": ["*.ts", "*.tsx", "*.js", "*.jsx"],
+      "rules": {
+        "@nx/enforce-module-boundaries": [
+          "error",
+          {
+            "enforceBuildableLibDependency": true,
+            "depConstraints": [
+              { "sourceTag": "scope:shared", "onlyDependOnLibsWithTags": ["scope:shared"] },
+              { "sourceTag": "scope:gateway", "onlyDependOnLibsWithTags": ["scope:gateway", "scope:shared"] },
+              { "sourceTag": "scope:auth", "onlyDependOnLibsWithTags": ["scope:auth", "scope:shared"] },
+              { "sourceTag": "scope:customers", "onlyDependOnLibsWithTags": ["scope:customers", "scope:shared"] },
+              { "sourceTag": "scope:inventory", "onlyDependOnLibsWithTags": ["scope:inventory", "scope:shared"] },
+              { "sourceTag": "scope:recipes", "onlyDependOnLibsWithTags": ["scope:recipes", "scope:shared"] },
+              { "sourceTag": "scope:orders", "onlyDependOnLibsWithTags": ["scope:orders", "scope:shared"] },
+              { "sourceTag": "scope:production", "onlyDependOnLibsWithTags": ["scope:production", "scope:shared"] },
+              { "sourceTag": "scope:dashboard", "onlyDependOnLibsWithTags": ["scope:dashboard", "scope:shared"] },
+              { "sourceTag": "scope:frontend", "onlyDependOnLibsWithTags": ["scope:frontend", "scope:dashboard", "scope:shared"] },
+              {
+                "sourceTag": "type:service",
+                "onlyDependOnLibsWithTags": [
+                  "type:feature",
+                  "type:data-access",
+                  "type:util",
+                  "type:contract",
+                  "type:messaging",
+                  "type:errors",
+                  "type:ui",
+                  "scope:shared"
+                ]
+              },
+              {
+                "sourceTag": "type:feature",
+                "onlyDependOnLibsWithTags": [
+                  "type:feature",
+                  "type:data-access",
+                  "type:util",
+                  "type:contract",
+                  "type:messaging",
+                  "type:errors",
+                  "type:ui",
+                  "scope:shared"
+                ]
+              },
+              {
+                "sourceTag": "type:data-access",
+                "onlyDependOnLibsWithTags": [
+                  "type:data-access",
+                  "type:util",
+                  "type:contract",
+                  "type:errors",
+                  "scope:shared"
+                ]
+              },
+              {
+                "sourceTag": "type:messaging",
+                "onlyDependOnLibsWithTags": [
+                  "type:messaging",
+                  "type:util",
+                  "type:contract",
+                  "type:errors",
+                  "scope:shared"
+                ]
+              },
+              {
+                "sourceTag": "type:ui",
+                "onlyDependOnLibsWithTags": [
+                  "type:ui",
+                  "type:util",
+                  "type:contract",
+                  "scope:shared"
+                ]
+              },
+              {
+                "sourceTag": "type:contract",
+                "onlyDependOnLibsWithTags": [
+                  "type:contract",
+                  "type:util",
+                  "type:errors",
+                  "scope:shared"
+                ]
+              },
+              {
+                "sourceTag": "type:errors",
+                "onlyDependOnLibsWithTags": [
+                  "type:errors",
+                  "type:util",
+                  "scope:shared"
+                ]
+              },
+              {
+                "sourceTag": "type:util",
+                "onlyDependOnLibsWithTags": [
+                  "type:util",
+                  "type:contract",
+                  "type:errors",
+                  "scope:shared"
+                ]
+              },
+              {
+                "sourceTag": "type:e2e",
+                "onlyDependOnLibsWithTags": [
+                  "scope:gateway",
+                  "scope:shared",
+                  "type:util",
+                  "type:contract"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

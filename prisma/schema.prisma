@@ -1,0 +1,11 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../libs/database/generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Schemas are defined per microservice during implementation.

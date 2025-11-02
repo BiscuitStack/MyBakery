@@ -1,0 +1,40 @@
+generator auth_client {
+  provider = "prisma-client-js"
+  output   = "../../libs/database/generated/auth-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("AUTH_DATABASE_URL")
+}
+
+model Tenant {
+  id          String    @id @default(uuid())
+  slug        String    @unique
+  name        String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deleted     Boolean   @default(false)
+  deletedAt   DateTime?
+  deletedById String?
+
+  users User[]
+}
+
+model User {
+  id           String    @id @default(uuid())
+  tenantId     String
+  email        String
+  displayName  String
+  passwordHash String
+  roles        String[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deleted      Boolean   @default(false)
+  deletedAt    DateTime?
+  deletedById  String?
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, email])
+}

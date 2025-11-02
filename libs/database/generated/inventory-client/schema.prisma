@@ -1,0 +1,76 @@
+generator inventory_client {
+  provider = "prisma-client-js"
+  output   = "../../libs/database/generated/inventory-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("INVENTORY_DATABASE_URL")
+}
+
+enum Unit {
+  g
+  kg
+  mg
+  ml
+  l
+  unit
+}
+
+model StockItem {
+  id              String    @id @default(uuid())
+  tenantId        String
+  name            String
+  unit            Unit
+  reorderLevel    Decimal   @default(0)
+  categories      String[]  @default([])
+  currentQuantity Decimal   @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deleted         Boolean   @default(false)
+  deletedAt       DateTime?
+  deletedById     String?
+
+  purchases PurchaseLine[]
+  waste     WasteLog[]
+
+  @@unique([tenantId, name])
+}
+
+model Purchase {
+  id           String   @id @default(uuid())
+  tenantId     String
+  supplierName String?
+  reference    String?
+  occurredAt   DateTime @default(now())
+  totalCost    Decimal  @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  lines PurchaseLine[]
+}
+
+model PurchaseLine {
+  id          String  @id @default(uuid())
+  purchaseId  String
+  stockItemId String
+  quantity    Decimal
+  unit        Unit
+  unitCost    Decimal
+  totalCost   Decimal
+
+  purchase  Purchase  @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  stockItem StockItem @relation(fields: [stockItemId], references: [id], onDelete: Restrict)
+}
+
+model WasteLog {
+  id          String   @id @default(uuid())
+  tenantId    String
+  stockItemId String
+  quantity    Decimal
+  unit        Unit
+  reason      String
+  occurredAt  DateTime @default(now())
+
+  stockItem StockItem @relation(fields: [stockItemId], references: [id], onDelete: Restrict)
+}

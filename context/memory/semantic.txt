@@ -1,0 +1,17 @@
+# Semantic Memory
+
+Domain Concepts
+- Monorepo managed by Nx; apps in `apps/`, libs in `libs/`.
+- Services communicate over RabbitMQ; API Gateway (NestJS) + Frontend (Next.js).
+
+Architectural Rationale
+- Enforce boundaries with Nx tags and `@bakewise/*` path aliases.
+- Unified error shape: { status, code, message, details? }.
+- Soft-delete policy across entities; UUID v4 IDs.
+
+Constraints & Standards
+- Language: TypeScript; 2-space indent; ~100 char lines.
+- Tests: ≥90% coverage for core libs and services.
+
+Persistence
+- PostgreSQL via Prisma ORM; each microservice maintains its own schema. Shared helpers in `libs/database`; models defined during service implementation.

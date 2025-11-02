@@ -1,0 +1,14 @@
+{
+  "extends": ["../../.eslintrc.json"],
+  "ignorePatterns": [
+    "generated/**/*"
+  ],
+  "overrides": [
+    {
+      "files": ["src/prisma/*.ts"],
+      "rules": {
+        "@nx/enforce-module-boundaries": "off"
+      }
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "baseUrl": ".",
+    "target": "ES2021",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "declaration": false,
+    "sourceMap": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "noImplicitAny": false,
+    "typeRoots": ["types", "node_modules/@types"],
+    "paths": {
+      "@bakewise/auth": ["libs/auth/src/index.ts"],
+      "@bakewise/common": ["libs/common/src/index.ts"],
+      "@bakewise/common-errors": ["libs/common-errors/src/index.ts"],
+      "@bakewise/contracts": ["libs/contracts/src/index.ts"],
+      "@bakewise/database": ["libs/database/src/index.ts"],
+      "@bakewise/messaging": ["libs/messaging/src/index.ts"],
+      "@bakewise/service-auth-tenancy/*": ["apps/service-auth-tenancy/src/*"],
+      "@bakewise/service-inventory/*": ["apps/service-inventory/src/*"],
+      "@bakewise/ui-charts": ["libs/ui-charts/src/index.ts"],
+      "@bakewise/ui-charts/server": ["libs/ui-charts/src/server.ts"],
+      "@bakewise/units": ["libs/units/src/index.ts"],
+      "@bakewise/validation": ["libs/validation/src/index.ts"],
+      "@bakewise/database/generated/auth-client": [
+        "libs/database/generated/auth-client/index"
+      ],
+      "@bakewise/database/generated/inventory-client": [
+        "libs/database/generated/inventory-client/index"
+      ]
+    }
+  }
+}

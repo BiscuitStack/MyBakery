@@ -1,0 +1,15 @@
+# Procedural Memory
+
+Validated Workflows
+- Cognitive loop: perceive → plan → act → verify → reflect → document.
+- Use `nx affected -t lint,test,build` for PR validation.
+
+Runbooks
+- Initialize docs/memory: create `context/memory/*`, `codex/TODO.md`, `docs/architecture.md`.
+- Prisma maintenance: `pnpm install`, `pnpm prisma:generate`, and `pnpm prisma:db:push` against the service-specific database once schema definitions exist.
+
+Verified Commands
+- `nx graph`, `nx run-many -t lint|test|build` (Nx v18 range).
+
+Patterns
+- Small, deterministic changes; one step in progress at a time.

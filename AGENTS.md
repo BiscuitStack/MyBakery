@@ -41,7 +41,8 @@ Concise contributor guide for the BakeWise monorepo managed by Nx. This covers s
   
 ## Testing Guidelines
 - Frameworks: Jest for unit/integration; Supertest for NestJS e2e; Playwright/Cypress for frontend e2e.
-- Layout: `apps/<project>/src/**/*.spec.ts`, e2e as `*.e2e-spec.ts` in dedicated e2e app.
+- Layout: place unit/integration specs under `apps/<project>/src/app/tests/` (e.g., `app/controller.spec.ts` → `src/app/tests/app.controller.spec.ts`). Shared lib tests live in `<lib>/tests/`.
+- E2E suites live outside `apps/` in `tests/e2e/<project>/`, keeping automation separated from service code.
 - Targets: ≥90% coverage for core libs (`libs/*`) and all services. Add regression tests for fixes.
 - Golden-path integration must include production planning output and waste logging checks. Analytics endpoints require unit/contract coverage.
 

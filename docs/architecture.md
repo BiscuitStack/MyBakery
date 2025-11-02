@@ -23,6 +23,7 @@ Services & Responsibilities
 - Auth & Tenancy Service: tenant provisioning API (secret-protected), subdomain lookup, user lifecycle, JWT issuance/validation.
 - Customer Service: customer profiles, notes, ratings, spend/open-order rollups, CRM-facing audit stream.
 - Inventory Service: stock catalog (with multi-category tagging), purchase capture with cost-basis recalculation, price history/trend tracking per supplier, stock-level projections, low-stock alerting.
+  - Current implementation (2025-11-03) exposes stock-item catalog, purchase logging, low-stock alerts, and waste logging via in-memory repository with RabbitMQ event stubs; persistence hook-in pending Prisma schema rollout.
 - Recipes Service: recipe and variant management, unit conversion, cost snapshotting, version history.
 - Orders Service: order intake, calendar scheduling, payment status & deposit ledger, pricing override logic, fulfillment tracking.
 - Production Planning Service: consumes confirmed orders to build daily production plans, batches, equipment timelines, and task assignments; surfaces conflicts and emits task status events.
@@ -44,6 +45,7 @@ Shared Libraries
 
 Persistence
 - PostgreSQL (Helm subchart in deploy) accessed via Prisma ORM. Each microservice owns its Postgres database/schema, defined alongside the service implementation. Shared helpers live in `libs/database`.
+- Schema definitions now tracked per service (`prisma/auth/schema.prisma`, `prisma/inventory/schema.prisma`) with dedicated environments (`AUTH_DATABASE_URL`, `INVENTORY_DATABASE_URL`). Prisma clients are not yet generated; persistence wiring will follow once migrations are defined.
 - All tables use `snake_case`, include `tenant_id`, timestamps, `deleted`, `deleted_at`, `deleted_by_id`.
 - Unit conversion data stored centrally (read-only reference) to keep recipe costing consistent.
 - Inventory schema includes category tables (`stock_categories`, `stock_item_categories`) and trend tables/views (`stock_price_trends`) to support purchasing UX and reporting.
@@ -61,13 +63,20 @@ Deployment
 - Helm chart in `deploy/chart`. Local dev via Docker Desktop K8s; production targets EKS.
 - Each service has its own Dockerfile, `/health` endpoint, and dedicated Postgres instance.
 
+Gateway Serve/Build Workflow
+- `pnpm nx serve api-gateway` → runs webpack build in watch mode with source maps for local dev.
+- `pnpm nx build api-gateway` → produces production bundle under `dist/apps/api-gateway` with generated `package.json`.
+- `pnpm nx lint api-gateway` / `pnpm nx test api-gateway` → enforce lint + unit guardrails before touching gateway code.
+
 Testing
 - Jest for unit/integration; Supertest for NestJS e2e; Playwright/Cypress for frontend e2e. Target ≥90% coverage for core libs/services.
+- Unit/integration specs reside under `apps/<service>/src/app/tests/*.spec.ts` (and `libs/<lib>/tests/`). Keep test helpers colocated in the same `tests/` folder.
 - Golden-path integration: stock item → purchase → recipe → order → dashboard inclusion.
 - Inventory-specific tests cover category-filtered purchase entry and price trend aggregation per supplier.
 - Production-specific tests cover plan generation, conflict detection, and task status transitions.
 - Waste logging tests cover inventory deduction, audit emission, and dashboard metric updates.
-- Gateway E2E covers subdomain login, tenant inference, dashboard metrics.
+- Gateway E2E covers subdomain login, tenant inference, dashboard metrics. E2E suites live in `tests/e2e/<project>/` outside the `apps/` tree.
+- Analytics tests validate chart data endpoints (filters, custom report queries) and ensure permissions scope results to the requesting tenant/user role.
 - Analytics tests validate chart data endpoints (filters, custom report queries) and ensure permissions scope results to the requesting tenant/user role.
 
 Auth & Tenant Flow
@@ -129,10 +138,11 @@ Nx Tag Enforcement
   - Rule: Applications/libs may import from their own scope or from `scope:shared` only; cross-scope imports between services are disallowed.
 - Types (`type:*`): `type:service`, `type:feature`, `type:data-access`, `type:ui`, `type:util`, `type:contract`, `type:messaging`, `type:errors`.
   - `type:service` (Nest apps) can import `type:feature`, `type:data-access`, `type:util`, `type:contract`, `type:messaging`, `type:errors` within the same scope or from `scope:shared`.
-  - `type:feature` libs cannot depend on `type:service`.
-  - `type:contract` and `type:errors` must live in `scope:shared` and cannot consume service-scoped code.
+- `type:feature` libs cannot depend on `type:service`.
+- `type:contract` and `type:errors` must live in `scope:shared` and cannot consume service-scoped code.
 - `libs/ui-charts` tagged `scope:shared,type:ui`; only `scope:dashboard` (and future analytics service) may depend on it.
-- Enforce via `nx.json` `tags`/`implicitDependencies` plus lint rules so Nx blocks disallowed imports.
+- Enforce via `nx.json` `tags`/`implicitDependencies` plus lint rules so Nx blocks disallowed imports. `pnpm nx lint <project>` now backs the enforcement after adding the explicit lint target in each service (gateway completed 2025-11-03).
+- Nx plugins: `@nx/eslint/plugin` and `@nx/jest/plugin` are registered in `nx.json`; the lint plugin evaluates scope/type tags on every `pnpm nx lint <project>`. CI will run `nx affected -t lint,test,build` plus `pnpm nx run-many -t test --codeCoverage -- --coverageThreshold='{ "global": { "branches": 90, "functions": 90, "lines": 90, "statements": 90 }}'` once pipelines are provisioned to enforce the ≥90% coverage mandate documented below. See `docs/prisma-runbook.md` for Prisma schema/migration/generation steps before enabling persistence-backed repositories.
 
 Open Questions
 - Shared exception-handling strategy (how services translate common errors from `libs/common-errors` into HTTP responses).
@@ -144,3 +154,8 @@ Delta Log
 - 2025-11-01: Selected Prisma ORM, added shared helpers/scripts, and deferred schema definitions until microservices are built. Persistence guidance updated for per-service databases.
 - 2025-11-02: Documented v1 service boundaries, tenant flow, dashboard KPIs, RabbitMQ routing conventions, and event catalog aligned with Core PRD clarifications.
 - 2025-11-02: Added production planning service scope, waste logging extension, schema updates, event catalog changes, and test expectations for capacity planning and spoilage tracking.
+- 2025-11-03: Recorded gateway serve/build workflow commands and noted lint target enforcement coverage for Nx tag taxonomy.
+- 2025-11-03: Stabilised shared libraries (date bucket utilities, unit conversions, validation schema helper, error response factory, messaging routing helpers, shared contract enums).
+- 2025-11-03: Scaffolded Inventory service (catalog, purchases, alerts, waste) with validation, unit/e2e coverage, and domain event stubs backed by in-memory storage pending Prisma integration.
+- 2025-11-03: Scaffolded Auth & Tenancy service with tenant provisioning + login endpoints, JWT helpers, in-memory repository, and unit/e2e tests; added domain event publisher stub.
+- 2025-11-03: Added docker-compose/.env example for local Postgres, documented Prisma runbook, and generated Prisma clients with repository adapters (auth/inventory) that fall back to in-memory for tests.
